@@ -22,12 +22,17 @@ class BeautifulPicture():
         driver.get(self.web_url)
         # 执行网页下拉到底部操作， 执行三次
         self.sroll_down(driver=driver, times=3)
-        print("开始获取所有a标签")
-        all_a = BeautifulSoup(driver.page_source, 'lxml').find_all('a', class_='cV68d')
+        print("开始获取所有div标签")
+        all_a = BeautifulSoup(driver.page_source, 'lxml').find_all('div', class_='cV68d')
         print('开始创建文件夹')
         is_new_folder = self.mkdir(self.folder_path)
         print('开始切换文件夹')
         os.chdir(self.folder_path)
+        print("div标签的数量是：", len(all_a))
+        for a in all_a:
+            img_str = a['srcset']
+            print("a标签的style内容是", img_str)
+
 
     def save_img(self, url, file_name):
         print("开始请求图片地址·························")
