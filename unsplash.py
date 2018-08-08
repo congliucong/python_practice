@@ -1,3 +1,4 @@
+# coding=UTF-8
 from selenium import webdriver
 import requests
 from bs4 import BeautifulSoup
@@ -8,42 +9,91 @@ import time
 class BeautifulPicture():
 
     def __init__(self):
-        # ¸øÇëÇóÖ¸¶¨Ò»¸öÇëÇóÍ·À´Ä£Äâchromeä¯ÀÀÆ÷
+        # ç»™è¯·æ±‚æŒ‡å®šä¸€ä¸ªè¯·æ±‚å¤´æ¥æ¨¡æ‹Ÿchromeæµè§ˆå™¨
         self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 '
                                       '(KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1'}
-        # Òª·ÃÎÊµÄµØÖ·
+        # è¦è®¿é—®çš„åœ°å€
         self.web_url = 'https://unsplash.com'
         self.folder_path = 'D:\python\BeautifulPicture'
 
     def get_pic(self):
-        print("¿ªÊ¼ÍøÒ³ÇëÇó")
-        # Ê¹ÓÃselenium Í¨¹ıphantomjsÀ´½øĞĞÍøÂçÇëÇó
+        print("å¼€å§‹ç½‘é¡µè¯·æ±‚")
+        # ä½¿ç”¨selenium é€šè¿‡phantomjsæ¥è¿›è¡Œç½‘ç»œè¯·æ±‚
         driver = webdriver.PhantomJS()
         driver.get(self.web_url)
-        # Ö´ĞĞÍøÒ³ÏÂÀ­µ½µ×²¿²Ù×÷£¬ Ö´ĞĞÈı´Î
-        self.sroll_down(driver=driver, times=3)
-        print("¿ªÊ¼»ñÈ¡ËùÓĞdiv±êÇ©")
-        all_a = BeautifulSoup(driver.page_source, 'lxml').find_all('div', class_='cV68d')
-        print('¿ªÊ¼´´½¨ÎÄ¼ş¼Ğ')
-        is_new_folder = self.mkdir(self.folder_path)
-        print('¿ªÊ¼ÇĞ»»ÎÄ¼ş¼Ğ')
-        os.chdir(self.folder_path)
-        print("div±êÇ©µÄÊıÁ¿ÊÇ£º", len(all_a))
-        for a in all_a:
-            img_str = a['srcset']
-            print("a±êÇ©µÄstyleÄÚÈİÊÇ", img_str)
+        # æ‰§è¡Œç½‘é¡µä¸‹æ‹‰åˆ°åº•éƒ¨æ“ä½œï¼Œ æ‰§è¡Œä¸‰æ¬¡
+        self.sroll_down(driver=driver, times=1)
+        print("å¼€å§‹è·å–æ‰€æœ‰divæ ‡ç­¾")
+        all_a = BeautifulSoup(driver.page_source, 'lxml').find_all('img', class_='_2zEKz')
 
+        print('å¼€å§‹åˆ›å»ºæ–‡ä»¶å¤¹')
+        is_new_folder = self.mkdir(self.folder_path)
+        print('å¼€å§‹åˆ‡æ¢æ–‡ä»¶å¤¹')
+        os.chdir(self.folder_path)
+        print("divæ ‡ç­¾çš„æ•°é‡æ˜¯ï¼š", len(all_a))
+        # è·å–æ–‡ä»¶å¤¹ä¸­æ‰€æœ‰æ–‡ä»¶åï¼Œç±»å‹ä¸ºlist
+        file_names = self.get_files(self.folder_path)
+        for a in all_a:
+            img_str = a['src']
+            print("aæ ‡ç­¾çš„srcå†…å®¹æ˜¯", img_str)
+            first_pos = 0
+            second_pos = img_str.index('?ixlib')
+
+            # ä½¿ç”¨pythonåˆ‡ç‰‡åŠŸèƒ½æˆªå–åŒå¼•å·ä¹‹é—´çš„å†…å®¹
+            img_url = img_str[first_pos: second_pos]
+            # æˆªå–urlä¸­å‚æ•°å‰é¢ã€ç½‘å€åé¢çš„å­—ç¬¦ä¸²ä¸ºå›¾ç‰‡å
+            name_start_pos = img_url.index('.com/') + 5
+            name_end_pos = len(img_url)
+            img_name = img_url[name_start_pos: name_end_pos] + '.jpg'
+            print(img_name)
+            img_name = img_name.replace('/', '')
+
+            if is_new_folder:
+                self.save_img(img_url, img_name)
+            else:
+                if img_name not in file_names:
+                    self.save_img(img_url, img_name)
+                else:
+                    print("è¯¥å›¾ç‰‡å·²ç»å­˜åœ¨ï¼š", img_name, "ä¸å†é‡æ–°ä¸‹è½½")
+
+    def get_files(self, path):
+        pic_names = os.listdir(path)
+        return pic_names
 
     def save_img(self, url, file_name):
-        print("¿ªÊ¼ÇëÇóÍ¼Æ¬µØÖ·¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤¡¤")
-        img = self.get_pic(url)
+        print("å¼€å§‹è¯·æ±‚å›¾ç‰‡åœ°å€Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·Â·")
+        img = self.request(url)
+        print("å¼€å§‹ä¿å­˜å›¾ç‰‡")
+        f = open(file_name, 'ab')
+        f.write(img.content)
+        print(file_name, 'å›¾ç‰‡ä¿å­˜æˆåŠŸï¼')
+        f.close()
+
+    def request(self, url):
+        r = requests.get(url)
+        return r
 
     def sroll_down(self, driver, times):
         for i in range(times):
-            print("¿ªÊ¼Ö´ĞĞµÚ", str(i+1), "´ÎÏÂÀ­²Ù×÷")
-            # Ö´ĞĞjsÏÂÀ­²Ù×÷
+            print("å¼€å§‹æ‰§è¡Œç¬¬", str(i+1), "æ¬¡ä¸‹æ‹‰æ“ä½œ")
+            # æ‰§è¡Œjsä¸‹æ‹‰æ“ä½œ
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            print("µÚ", str(i+1), "´ÎÏÂÀ­²Ù×÷Ö´ĞĞÍê±Ï")
-            print("µÚ", str(i + 2), "´ÎµÈ´ıÍøÒ³¼ÓÔØ")
-            # µÈ´ı30Ãë£¬Ò³Ãæ¼ÓÔØ³öÀ´ÔÙÖ´ĞĞÏÂÀ­²Ù×÷
+            print("ç¬¬", str(i+1), "æ¬¡ä¸‹æ‹‰æ“ä½œæ‰§è¡Œå®Œæ¯•")
+            print("ç¬¬", str(i+1), "æ¬¡ç­‰å¾…ç½‘é¡µåŠ è½½")
+            # ç­‰å¾…30ç§’ï¼Œé¡µé¢åŠ è½½å‡ºæ¥å†æ‰§è¡Œä¸‹æ‹‰æ“ä½œ
             time.sleep(30)
+
+    def mkdir(self, path):
+        path = path.strip()
+        isexists = os.path.exists(path)
+        if not isexists:
+            print("åˆ›å»ºåå­—å«åšï¼š", path, "çš„æ–‡ä»¶å¤¹")
+            os.makedirs(path)
+            print("åˆ›å»ºæˆåŠŸ")
+            return True
+        else:
+            print("æ–‡ä»¶å¤¹å·²ç»å­˜åœ¨ï¼Œä¸å†åˆ›å»º")
+            return False
+
+beauty = BeautifulPicture()
+beauty.get_pic()
