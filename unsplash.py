@@ -23,6 +23,7 @@ class BeautifulPicture():
         driver.get(self.web_url)
         # 执行网页下拉到底部操作， 执行三次
         self.sroll_down(driver=driver, times=1)
+        print(driver.page_source)
         print("开始获取所有div标签")
         all_a = BeautifulSoup(driver.page_source, 'lxml').find_all('img', class_='_2zEKz')
 
