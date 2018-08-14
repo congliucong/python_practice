@@ -5,12 +5,21 @@ import tornado.httpserver
 import tornado.ioloop
 import hashlib
 from tornado.web import RequestHandler
+from wechat_sdk import WechatConf
+from wechat_sdk import WechatBasic
 from tornado.options import options, define
 
-WECHAT_TOKEN = "weixintoken"
 
-define("port", default=8888, type=int, help="")
+define("port", default=80, type=int, help="")
 
+conf = WechatConf(
+    token='weixintoken',
+    appid='wx1ed711720d6937a9',
+    appsecret='Angel84562',
+    encrypt_mode='normal',
+    encoding_aes_key='z1TVUN3oA5MMEWd2h49aQAwBQEwimrPMTl1oKwcAaxf'
+)
+wechat = WechatBasic(conf=conf)
 
 class WeChatHandler(RequestHandler):
     def get(self):
@@ -18,11 +27,7 @@ class WeChatHandler(RequestHandler):
         timestamp = self.get_argument('timestamp')
         nonce = self.get_argument('nonce')
         echostr = self.get_argument('echostr')
-        tmp = [WECHAT_TOKEN, timestamp, nonce]
-        tmp.sort()
-        tmp = "".join(tmp)
-        real_signature = hashlib.sha1(tmp).hexdigest()
-        if signature == real_signature:
+        if wechat.check_signature(signature, timestamp, nonce):
             self.write(echostr)
         else:
             self.write('Not Open')
@@ -32,7 +37,7 @@ def main():
     tornado.options.parse_command_line()
     app = tornado.web.Application(
         [
-            (r"/wechat8888", WeChatHandler),
+            (r"/wechat80", WeChatHandler),
         ], debug = True
     )
     http_server = tornado.httpserver.HTTPServer(app)
