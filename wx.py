@@ -4,7 +4,8 @@ from wechat_sdk import WechatConf
 from wechat_sdk import WechatBasic
 from wechat_sdk.exceptions import ParseError
 from auto_reply import TulingAutoReply
-from  image import  img
+from image import img
+from image2 import image2
 conf = WechatConf(
     token='weixintoken',
     appid='wx1ed711720d6937a9',
@@ -61,10 +62,12 @@ class WX(tornado.web.RequestHandler):
         # 消息是图像消息
         elif isinstance(wechat.message, ImageMessage):
             picurl = wechat.message.picurl  # PicUrld
-            data = img(picurl)
+            print("照片URL是：", picurl)
+            # data = img(picurl)
+            data = image2(picurl)
             # media_id = wechat.message.media_id  # MediaId
             if picurl is not None:
-                return wechat.response_text(data)
+                return wechat.response_text(content=data['content']['text'])
         # 关注动作
         elif isinstance(wechat.message, EventMessage):
             if wechat.message.type == 'subscribe':  # 关注事件(包括普通关注事件和扫描二维码造成的关注事件)
