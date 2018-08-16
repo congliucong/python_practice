@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import tornado
 from wechat_sdk.messages import *
 from wechat_sdk import WechatConf
@@ -6,6 +7,7 @@ from wechat_sdk.exceptions import ParseError
 from auto_reply import TulingAutoReply
 from image import img
 from image2 import image2
+import random
 conf = WechatConf(
     token='weixintoken',
     appid='wx1ed711720d6937a9',
@@ -43,12 +45,15 @@ class WX(tornado.web.RequestHandler):
         # 消息是文本消息
         if isinstance(wechat.message, TextMessage):
             content = wechat.message.content
-            reply = auto_reply.reply(content)
-            if reply is not None:
-                return wechat.response_text(content=reply)
+            if content == "我的专属情话":
+                return wechat.response_text(content=self.get_sentence())
             else:
-                return wechat.response_text(content=u"我不是很懂你在说什么~")
-            return wechat.response_text(content=u"知道了")
+                reply = auto_reply.reply(content)
+                if reply is not None:
+                    return wechat.response_text(content=reply)
+                else:
+                    return wechat.response_text(content=u"我不是很懂你在说什么~")
+                return wechat.response_text(content=u"知道了")
         # 消息是声音消息
         elif isinstance(wechat.message, VoiceMessage):
             # media_id = wechat.message.media_id  # MediaId
@@ -74,6 +79,12 @@ class WX(tornado.web.RequestHandler):
                 return wechat.response_text(content=u"欢迎关注Lcccc的公众号~")
         else:
             return wechat.response_text(content=u"啦啦啦啦~")
+
+    def get_sentence(self):
+        with open('/wx/note.txt', encoding='utf8') as f:
+            lines = f.readlines()
+            index = random.randint(0, len(lines))
+            return lines[index]
 
     def post(self):
         signature = self.get_argument('signature', 'default')
